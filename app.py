@@ -1,43 +1,80 @@
-
 import streamlit as st
 import pandas as pd
-from modules.skill_analysis import analyze_skills
-from modules.career_recommendation import recommend_career
-from modules.roadmap import create_roadmap
 
-# PAGE SETTINGS
+# --------------------------------
+# PAGE CONFIGURATION
+# --------------------------------
+
 st.set_page_config(
     page_title="AI Career Analyzer",
     page_icon="🎯",
     layout="wide"
 )
 
-# CUSTOM DESIGN
+# --------------------------------
+# CUSTOM CSS
+# --------------------------------
+
 st.markdown("""
 <style>
+
 .stApp {
     background-color: #F0F4FF;
 }
+
 h1 {
     color: #263B80;
     text-align: center;
 }
+
 h2, h3 {
     color: #263B80;
 }
+
 div.stButton > button {
     background-color: #4939C8;
     color: white;
     border-radius: 10px;
     height: 45px;
-    width: 100%;
     font-weight: bold;
 }
+
 </style>
 """, unsafe_allow_html=True)
 
-# HEADER
+
+# --------------------------------
+# CAREER DATASET
+# --------------------------------
+
+careers = {
+    "Career": [
+        "Data Analyst",
+        "Python Developer",
+        "Web Developer",
+        "Java Developer",
+        "Software Engineer",
+        "Cyber Security Analyst"
+    ],
+
+    "Python": [3, 5, 2, 2, 4, 3],
+    "SQL": [5, 2, 1, 2, 4, 3],
+    "Excel": [5, 2, 1, 1, 3, 2],
+    "Power BI": [5, 1, 1, 1, 2, 1],
+    "HTML": [1, 2, 5, 2, 4, 1],
+    "CSS": [1, 2, 5, 2, 3, 1],
+    "Java": [1, 3, 3, 5, 5, 3]
+}
+
+career_df = pd.DataFrame(careers)
+
+
+# --------------------------------
+# MAIN HEADER
+# --------------------------------
+
 st.title("🎯 AI Career & Skill Gap Analyzer")
+
 st.markdown(
     "<h4 style='text-align:center;'>"
     "Discover Your Skills | Find Your Career | Build Your Future"
@@ -47,25 +84,39 @@ st.markdown(
 
 st.divider()
 
+
+# --------------------------------
 # SIDEBAR
+# --------------------------------
+
 st.sidebar.title("🎓 Student Dashboard")
+
 page = st.sidebar.radio(
-    "Select Page",
-    ["Home", "Skill Assessment", "About Project"]
+    "Select Menu",
+    [
+        "Home",
+        "Skill Assessment",
+        "About Project"
+    ]
 )
+
+
+# --------------------------------
+# HOME PAGE
+# --------------------------------
 
 if page == "Home":
 
     st.header("Welcome to AI Career Analyzer 👋")
 
     st.write("""
-    This system helps students to:
+    This website helps students to:
 
-    - Understand their technical skills.
-    - Find suitable career options.
-    - Identify missing skills.
-    - Get personalized learning roadmaps.
-    - Improve career readiness.
+    1. Analyze their technical skills.
+    2. Find suitable career options.
+    3. Identify missing skills.
+    4. Get a personalized learning roadmap.
+    5. Understand their career readiness.
     """)
 
     col1, col2, col3 = st.columns(3)
@@ -74,32 +125,44 @@ if page == "Home":
     col2.success("🎯 Career Recommendation")
     col3.warning("📚 Learning Roadmap")
 
-    st.subheader("🚀 Start Your Career Journey")
+    st.subheader("Start Your Career Journey 🚀")
 
-    if st.button("Start Skill Assessment"):
-        st.session_state.page = "Skill Assessment"
-        st.rerun()
+    st.write(
+        "Go to Skill Assessment from the sidebar "
+        "to check your career opportunities."
+    )
+
+
+# --------------------------------
+# ABOUT PAGE
+# --------------------------------
 
 elif page == "About Project":
 
     st.header("📖 About Our Project")
 
     st.write("""
-    AI Career & Skill Gap Analyzer is a student career
-    guidance system.
+    AI Career & Skill Gap Analyzer is a career
+    guidance system for students.
 
-    It compares student skills with career requirements
-    and recommends suitable career paths.
+    It compares student skills with career
+    requirements and recommends suitable careers.
 
-    Technology Used:
+    Technologies Used:
+
     - Python
     - Streamlit
     - Pandas
-    - Machine Learning (future enhancement)
-    - CSV Dataset
+    - Data Analysis
+    - Rule-Based Recommendation
     """)
 
-elif page == "Skill Assessment" or st.session_state.get("page") == "Skill Assessment":
+
+# --------------------------------
+# SKILL ASSESSMENT PAGE
+# --------------------------------
+
+elif page == "Skill Assessment":
 
     st.header("👩‍🎓 Student Information")
 
@@ -119,46 +182,55 @@ elif page == "Skill Assessment" or st.session_state.get("page") == "Skill Assess
 
     st.divider()
 
-    st.header("💻 Rate Your Technical Skills")
+    st.header("💻 Rate Your Skills")
 
-    st.write("Give yourself a rating from 0 to 5.")
+    st.write("""
+    Give your skill rating from 0 to 5.
 
-    skill_names = [
-        "Python", "SQL", "Excel",
-        "Power BI", "HTML", "CSS", "Java"
+    0 = No Knowledge
+    1 = Beginner
+    2 = Basic
+    3 = Intermediate
+    4 = Advanced
+    5 = Expert
+    """)
+
+    skills = [
+        "Python",
+        "SQL",
+        "Excel",
+        "Power BI",
+        "HTML",
+        "CSS",
+        "Java"
     ]
 
     student_skills = {}
 
     col1, col2 = st.columns(2)
 
-    for i, skill in enumerate(skill_names):
+    for i, skill in enumerate(skills):
 
         with col1 if i % 2 == 0 else col2:
 
             student_skills[skill] = st.slider(
                 skill,
-                min_value=0,
-                max_value=5,
-                value=0,
+                0,
+                5,
+                0,
                 key=skill
             )
 
     st.divider()
 
-    st.header("🎯 Select Your Career Interest")
-
     interest = st.selectbox(
-        "Which career interests you?",
-        [
-            "Data Analyst",
-            "Python Developer",
-            "Web Developer",
-            "Java Developer",
-            "Software Engineer",
-            "Cyber Security Analyst"
-        ]
+        "Choose Your Interested Career",
+        career_df["Career"].tolist()
     )
+
+    # --------------------------------
+    # ANALYZE BUTTON
+    # --------------------------------
 
     if st.button("🔍 Analyze My Career"):
 
@@ -168,29 +240,71 @@ elif page == "Skill Assessment" or st.session_state.get("page") == "Skill Assess
 
         else:
 
-            careers = pd.read_csv("data/careers.csv")
+            results = []
 
-            results = recommend_career(
-                student_skills, careers
+            for _, career in career_df.iterrows():
+
+                total = 0
+                matched = 0
+
+                for skill in skills:
+
+                    required = int(career[skill])
+                    student = student_skills[skill]
+
+                    total += required
+                    matched += min(student, required)
+
+                match_score = (
+                    matched / total * 100
+                    if total else 0
+                )
+
+                results.append({
+                    "Career": career["Career"],
+                    "Match": round(match_score, 2)
+                })
+
+            results = sorted(
+                results,
+                key=lambda x: x["Match"],
+                reverse=True
             )
 
-            best_career = results[0]["Career"]
+            # --------------------------------
+            # SELECTED CAREER ANALYSIS
+            # --------------------------------
 
-            required = careers[
-                careers["Career"] == best_career
+            selected = career_df[
+                career_df["Career"] == interest
             ].iloc[0]
 
             required_skills = {
-                skill: int(required[skill])
-                for skill in skill_names
+                skill: int(selected[skill])
+                for skill in skills
             }
 
-            score, missing = analyze_skills(
-                student_skills,
-                required_skills
-            )
+            missing = []
 
-            st.success("Your Career Analysis is Ready!")
+            total = len(skills)
+            matched = 0
+
+            for skill in skills:
+
+                if student_skills[skill] >= required_skills[skill]:
+                    matched += 1
+                else:
+                    missing.append(skill)
+
+            score = matched / total * 100
+
+            # --------------------------------
+            # RESULTS
+            # --------------------------------
+
+            st.success(
+                f"Hello {name}! Your analysis is ready."
+            )
 
             st.divider()
 
@@ -198,10 +312,10 @@ elif page == "Skill Assessment" or st.session_state.get("page") == "Skill Assess
 
             c1, c2, c3 = st.columns(3)
 
-            c1.metric("Student Name", name)
+            c1.metric("Student", name)
 
             c2.metric(
-                "Career Match",
+                "Skill Match",
                 f"{score:.1f}%"
             )
 
@@ -210,64 +324,91 @@ elif page == "Skill Assessment" or st.session_state.get("page") == "Skill Assess
                 len(missing)
             )
 
-            st.subheader("🏆 Top Career Recommendations")
+            # --------------------------------
+            # CAREER RECOMMENDATION
+            # --------------------------------
 
-            chart_data = pd.DataFrame(results)
+            st.header("🏆 Top Career Recommendations")
+
+            result_df = pd.DataFrame(results)
 
             st.bar_chart(
-                chart_data,
+                result_df,
                 x="Career",
                 y="Match"
             )
 
-            st.subheader("💪 Your Skill Analysis")
+            st.write(
+                f"Your highest matching career is: "
+                f"**{results[0]['Career']}**"
+            )
 
-            for skill, rating in student_skills.items():
+            # --------------------------------
+            # SKILL ANALYSIS
+            # --------------------------------
 
-                st.write(f"**{skill} - {rating}/5**")
+            st.header("💪 Your Skill Analysis")
+
+            for skill in skills:
+
+                rating = student_skills[skill]
+
+                st.write(f"{skill}: {rating}/5")
 
                 st.progress(rating / 5)
 
-            st.divider()
+            # --------------------------------
+            # MISSING SKILLS
+            # --------------------------------
 
-            st.header("⚠️ Your Missing Skills")
+            st.header("⚠️ Skills to Improve")
 
             if missing:
 
                 for skill in missing:
+
                     st.warning(
-                        f"Improve your {skill} skills."
+                        f"You should improve {skill}"
                     )
 
             else:
 
                 st.success(
-                    "Excellent! You meet all the listed skill requirements."
+                    "You meet all listed skill requirements!"
                 )
 
-            st.divider()
+            # --------------------------------
+            # LEARNING ROADMAP
+            # --------------------------------
 
-            st.header("📚 Your Learning Roadmap")
+            st.header("📅 Your Learning Roadmap")
 
-            plan = create_roadmap(missing)
+            for i, skill in enumerate(missing):
 
-            if plan:
+                start = i * 5 + 1
+                end = start + 4
 
-                for item in plan:
+                with st.expander(
+                    f"Day {start} - Day {end}: {skill}"
+                ):
 
-                    with st.expander(
-                        f"📅 {item['Day']} - {item['Skill']}"
-                    ):
+                    st.write(
+                        f"Learn and practice {skill}."
+                    )
 
-                        st.write(item["Task"])
+                    st.write(
+                        "Complete one small practical exercise."
+                    )
 
-            else:
+            if not missing:
 
                 st.success("No skill gaps found!")
 
-            st.divider()
+            # --------------------------------
+            # LEARNING RESOURCES
+            # --------------------------------
 
-            st.header("🌐 Free Learning Resources")
+            st.header("📚 Free Learning Resources")
 
             resources = {
                 "Python": "https://www.w3schools.com/python/",
@@ -285,12 +426,11 @@ elif page == "Skill Assessment" or st.session_state.get("page") == "Skill Assess
                     f"[Learn {skill}]({resources[skill]})"
                 )
 
-            st.divider()
+            # --------------------------------
+            # DOWNLOAD REPORT
+            # --------------------------------
 
-            st.info(
-                "Your recommended career based on skill matching: "
-                + best_career
-            )
+            st.header("📥 Download Career Report")
 
             report = f"""
 AI CAREER & SKILL GAP ANALYZER
@@ -302,21 +442,21 @@ Semester: {semester}
 
 Career Interest: {interest}
 
-Best Recommended Career: {best_career}
+Best Matching Career: {results[0]['Career']}
 
-Career Match Score: {score:.1f}%
+Skill Match: {score:.1f}%
 
-SKILLS:
+Student Skills:
 {student_skills}
 
-SKILLS TO IMPROVE:
+Skills To Improve:
 {missing}
 
-Thank you for using AI Career Analyzer!
+Thank You!
 """
 
             st.download_button(
-                "📥 Download Career Report",
+                "Download My Career Report",
                 data=report,
                 file_name="Career_Report.txt",
                 mime="text/plain"
